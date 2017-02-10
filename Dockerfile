@@ -23,23 +23,26 @@ RUN { \
 WORKDIR /var/www/html
 
 # https://www.drupal.org/node/3060/release
-ENV DRUPAL_VERSION 8.2.4
-ENV DRUPAL_MD5 288aa9978b5027e26f20df93b6295f6c
+ENV DRUPAL_VERSION 8.2.6
+ENV DRUPAL_MD5 57526a827771ea8a06db1792f1602a85
 
 RUN curl -fSL "https://ftp.drupal.org/files/projects/drupal-${DRUPAL_VERSION}.tar.gz" -o drupal.tar.gz \
 	&& echo "${DRUPAL_MD5} *drupal.tar.gz" | md5sum -c - \
 	&& tar -xz --strip-components=1 -f drupal.tar.gz \
 	&& rm drupal.tar.gz \
 	&& chown -R www-data:www-data sites modules themes
+# Install Drush
 RUN php -r "readfile('https://s3.amazonaws.com/files.drush.org/drush.phar');" > drush \
     && chmod +x drush \
     && mv drush /usr/local/bin \
     && drush init -y
+# Install Composer
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
     && php -r "if (hash_file('SHA384', 'composer-setup.php') === 'aa96f26c2b67226a324c27919f1eb05f21c248b987e6195cad9690d5c1ff713d53020a02ac8c217dbf90a7eacc9d141d') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;" \
     && php composer-setup.php \
     && php -r "unlink('composer-setup.php');" \
     && mv composer.phar /usr/local/bin/composer
+# Install Drupal Console
 RUN php -r "readfile('https://drupalconsole.com/installer');" > drupal.phar \
     && mv drupal.phar /usr/local/bin/drupal \
     && chmod +x /usr/local/bin/drupal \
