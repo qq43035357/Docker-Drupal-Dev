@@ -33,21 +33,25 @@ RUN curl -fSL "https://ftp.drupal.org/files/projects/drupal-${DRUPAL_VERSION}.ta
 	&& chown -R www-data:www-data sites modules themes
 # Install Drush
 RUN php -r "readfile('https://s3.amazonaws.com/files.drush.org/drush.phar');" > drush \
-    && chmod +x drush \
-    && mv drush /usr/local/bin \
-    && drush init -y
+        && chmod +x drush \
+        && mv drush /usr/local/bin \
+        && drush init -y
 # Install Composer
+# See https://pkg.phpcomposer.com/
+# and https://getcomposer.org/download/
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
-    && php composer-setup.php \
-    && php -r "unlink('composer-setup.php');" \
-    && mv composer.phar /usr/local/bin/composer
+        && php composer-setup.php \
+        && php -r "unlink('composer-setup.php');" \
+        && mv composer.phar /usr/local/bin/composer \
+        && composer config -g repo.packagist composer https://packagist.phpcomposer.com
+
 # Install Drupal Console
 RUN php -r "readfile('https://drupalconsole.com/installer');" > drupal.phar \
-    && mv drupal.phar /usr/local/bin/drupal \
-    && chmod +x /usr/local/bin/drupal \
-    && cd /var/www/html \
-    && composer require drupal/console:~1.0 \
-        --prefer-dist \
-        --optimize-autoloader \
-        --sort-packages
+        && mv drupal.phar /usr/local/bin/drupal \
+        && chmod +x /usr/local/bin/drupal \
+        && cd /var/www/html \
+        && composer require drupal/console:~1.0 \
+           --prefer-dist \
+           --optimize-autoloader \
+           --sort-packages
 
